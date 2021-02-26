@@ -2,7 +2,7 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/josh-hogle/logrus-cloudwatch-hook)](https://pkg.go.dev/github.com/josh-hogle/logrus-cloudwatch-hook)
 [![license](https://img.shields.io/badge/license-apache-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![support](https://img.shields.io/badge/support-community-purple.svg)](https://github.com/josh-hogle/logrus-cloudwatch-hook)
+[![support](https://img.shields.io/badge/support-community-purple.svg)](#)
 
 ## Overview
 
