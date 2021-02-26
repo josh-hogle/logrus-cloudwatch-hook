@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	"github.com/sirupsen/logrus"
@@ -22,7 +21,7 @@ type CloudWatchLogsHook struct {
 	nextSequenceToken *string
 
 	// options
-	retentionDays int
+	retentionDays int32
 	kmsKeyID      string
 	tags          map[string]string
 	logFrequency  time.Duration
@@ -37,24 +36,12 @@ type CloudWatchLogsHook struct {
 type CloudWatchLogsHookOption func(*CloudWatchLogsHook)
 
 // NewCloudWatchLogsHook creates a new hook for sending log message to Amazon CloudWatch Logs.
-func NewCloudWatchLogsHook(region, group, stream string, options ...CloudWatchLogsHookOption) (
+func NewCloudWatchLogsHook(config aws.Config, group, stream string, options ...CloudWatchLogsHookOption) (
 	*CloudWatchLogsHook, error) {
 
 	// create the hook
-	var (
-		awsConfig aws.Config
-		err       error
-	)
-	if region != "" {
-		awsConfig, err = config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
-	} else {
-		awsConfig, err = config.LoadDefaultConfig(context.TODO())
-	}
-	if err != nil {
-		return nil, err
-	}
 	hook := &CloudWatchLogsHook{
-		client:            cloudwatchlogs.NewFromConfig(awsConfig),
+		client:            cloudwatchlogs.NewFromConfig(config),
 		group:             group,
 		stream:            stream,
 		nextSequenceToken: nil,
@@ -78,7 +65,7 @@ func NewCloudWatchLogsHook(region, group, stream string, options ...CloudWatchLo
 	}
 
 	// make sure the group and stream exist; if not, create them
-	err = hook.createLogGroup()
+	err := hook.createLogGroup()
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +78,7 @@ func NewCloudWatchLogsHook(region, group, stream string, options ...CloudWatchLo
 
 // WithGroupRetentionDays sets the number of days to retain logs for the log group. This is only valid if the log
 // group is being created and does not already exist.
-func WithGroupRetentionDays(days int) CloudWatchLogsHookOption {
+func WithGroupRetentionDays(days int32) CloudWatchLogsHookOption {
 	return func(h *CloudWatchLogsHook) {
 		h.retentionDays = days
 	}
@@ -217,7 +204,7 @@ func (h *CloudWatchLogsHook) createLogGroup() error {
 	if err != nil {
 		return err
 	}
-	return nil
+	return h.setRetentionPolicy()
 }
 
 // createLogStream will create the CloudWatch log group stream if it does not exist already.
@@ -350,4 +337,25 @@ func (h *CloudWatchLogsHook) sendBatch(batch []types.InputLogEvent) {
 	} else {
 		h.nextSequenceToken = result.NextSequenceToken
 	}
+}
+
+// setRetentionPolicy updates the retention policy for the log group.
+func (h *CloudWatchLogsHook) setRetentionPolicy() error {
+	var err error
+	if h.retentionDays > 0 {
+		input := &cloudwatchlogs.PutRetentionPolicyInput{
+			LogGroupName:    aws.String(h.group),
+			RetentionInDays: aws.Int32(h.retentionDays),
+		}
+		_, err = h.client.PutRetentionPolicy(context.TODO(), input)
+	} else {
+		input := &cloudwatchlogs.DeleteRetentionPolicyInput{
+			LogGroupName: aws.String(h.group),
+		}
+		_, err = h.client.DeleteRetentionPolicy(context.TODO(), input)
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }
