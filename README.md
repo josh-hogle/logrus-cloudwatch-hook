@@ -1,5 +1,6 @@
 # Logrus Hook for CloudWatch Logs
 
+[![godoc reference](https://pkg.go.dev/github.com/josh-hogle/logrus-cloudwatch-hook/?status.png)(https://pkg.go.dev/github.com/josh-hogle/logrus-cloudwatch-hook)
 [![license](https://img.shields.io/badge/license-apache-blue.svg)](https://github.com/josh-hogle/logrus-cloudwatch-hook/blob/trunk/LICENSE)
 [![support](https://img.shields.io/badge/support-community-purple.svg)](https://github.com/josh-hogle/logrus-cloudwatch-hook)
 
