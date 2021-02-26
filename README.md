@@ -31,5 +31,5 @@ By default, log messages are sent immediately to CloudWatch. Under certain circu
 ## Links
 
 [Logrus](https://github.com/sirupsen/logrus) 
-[Getting Started with the AWS SDK for Go V2](https://aws.github.io/aws-sdk-go-v2/docs/)getting-started/
+[Getting Started with the AWS SDK for Go V2](https://aws.github.io/aws-sdk-go-v2/docs/getting-started/)
 [AWS Go v2 SDK Reference](https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/)
